@@ -62,6 +62,8 @@ Teste estes três cenários:
     Perdi as sessões de quarta e sexta da primeira semana. Ajusta o plano?
     ```
 
+Para depurar com mais detalhe, rode `npm run web` e abra `http://127.0.0.1:3000`: o chat fica à esquerda e, à direita, cada chamada de ferramenta com argumentos e resultado.
+
 O arquivo gerado fica em `agente-estudos/planos/plano-de-estudos.csv`. Para usar, importe no [Google Agenda](https://calendar.google.com/): **Configurações → Importar e exportar → Importar**.
 
 ## Estrutura
@@ -72,7 +74,8 @@ O arquivo gerado fica em `agente-estudos/planos/plano-de-estudos.csv`. Para usar
 ├── README.md
 ├── skills/plano-de-estudos/       # fonte da skill
 └── agente-estudos/                # criado a partir do AGENTS.md
-    ├── agente.ts
+    ├── config.ts, agente.ts       # opções e chat no terminal
+    ├── servidor.ts, public/       # debug UI local
     ├── .claude/skills/            # cópia da skill
     └── planos/                    # CSVs gerados, não versionado
 ```

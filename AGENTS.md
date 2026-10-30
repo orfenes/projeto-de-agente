@@ -37,7 +37,28 @@ Você é um engenheiro de software especialista em IA, fazendo pair programming 
 * **Dependências:** `npm` dentro da pasta do agente, com o `package-lock.json` versionado.
 * **Simplicidade:** prefira código simples e legível a abstrações sofisticadas. Confirme o entendimento do pedido antes de gerar muito código.
 * **Segredos:** **nunca** versione o `.env` nem pastas com dados pessoais, e nunca escreva a API Key em código, README, testes ou logs.
-* **Fora de escopo:** deploy, interface web e infraestrutura (Terraform, CI/CD), a menos que sejam pedidos explicitamente.
+* **Fora de escopo:** deploy, interface web pública e infraestrutura (Terraform, CI/CD), a menos que sejam pedidos explicitamente.
+
+## Debug UI local
+
+O SDK não traz uma interface visual como o `adk web`. Para depurar, construa uma página **só para uso local**, seguindo estas regras:
+
+* **Arquivos:** `config.ts` (opções do agente e hook, com a função `montarOpcoes(sessionId?)`), `servidor.ts` (servidor HTTP) e `public/index.html` (página). O `agente.ts` (terminal) e o `servidor.ts` importam as mesmas opções do `config.ts`, sem duplicar configuração.
+* **Servidor:** use só `node:http`, sem framework. Escute **apenas em `127.0.0.1`**, porque a página usa a API Key do `.env`. A porta vem de `PORT` (padrão 3000).
+* **Rotas:** `GET /` serve a página, `GET /api/info` devolve o modelo e `POST /api/chat` recebe `{ mensagem, sessionId }`. Rejeite mensagem vazia com `400`.
+* **Streaming:** `POST /api/chat` responde em **NDJSON** (`application/x-ndjson`), uma mensagem do SDK por linha, enviada assim que chega. Erros durante o `query()` viram uma linha `{ "type": "erro_servidor", "mensagem": "..." }`.
+* **Página, duas colunas:**
+  * **Conversa:** chat com envio por Enter (Shift+Enter quebra a linha) e botão "Nova conversa", que zera o `sessionId`.
+  * **Eventos:** linha do tempo do turno, com um item expansível por evento. Cada item mostra um resumo e o JSON completo.
+* **Eventos que a página deve mostrar:**
+  * `system` com `subtype: "init"`: modelo, ferramentas e skills carregadas.
+  * `assistant`: blocos `text` vão para o chat; `tool_use` (nome e argumentos) e `thinking` vão para os eventos.
+  * `user` com blocos `tool_result`: resultado de cada ferramenta, ligado ao `tool_use` por `tool_use_id`. Com `is_error`, mostre como erro. É aqui que aparece a negação do hook, com o motivo.
+  * `result`: número de passos, duração, `total_cost_usd` e uso de tokens.
+  * Ignore os outros tipos de mensagem (por exemplo `rate_limit_event`).
+* **Segurança da página:** escreva o conteúdo vindo do agente com `textContent`, nunca com `innerHTML`.
+* **Visual:** suporte a tema claro e escuro (`prefers-color-scheme`), layout que empilha as colunas em telas estreitas e erros em destaque.
+* **Script:** `npm run web` roda `tsx --env-file=.env servidor.ts`.
 
 ## Como validar
 
@@ -45,6 +66,8 @@ Você é um engenheiro de software especialista em IA, fazendo pair programming 
 * Teste com chamadas reais: um pedido incompleto (gating), um completo, um ajuste e uma tentativa de escrever fora da pasta permitida.
 * Rode o chat com a entrada vinda de um pipe (`printf '...\n' | npm start`) para automatizar os testes.
 * Confira com `git status` que nada sensível foi para o git.
+* Para a debug UI, suba o servidor e teste com `curl -N -X POST http://127.0.0.1:3000/api/chat -H 'Content-Type: application/json' -d '{"mensagem":"..."}'`. Confirme que os eventos chegam linha a linha e que a negação do hook aparece como `tool_result` com `is_error`.
+* Abra a página num navegador e confira o layout, o scroll, o tema escuro e o botão "Nova conversa". Os testes por `curl` não cobrem isso.
 
 ## Armadilhas já encontradas
 
@@ -77,7 +100,10 @@ Construir o **`agente-estudos`**: um agente movido a skills que monta planos de 
   ├── package.json
   ├── tsconfig.json
   ├── .env                      # não versionado
-  ├── agente.ts                 # opções do agente + chat no terminal
+  ├── config.ts                 # opções do agente e hook (compartilhado)
+  ├── agente.ts                 # chat no terminal
+  ├── servidor.ts               # debug UI local (http://127.0.0.1:3000)
+  ├── public/index.html         # página da debug UI
   ├── .claude/skills/plano-de-estudos/   # cópia da skill
   └── planos/                   # CSVs gerados, não versionado
   ```
@@ -85,7 +111,8 @@ Construir o **`agente-estudos`**: um agente movido a skills que monta planos de 
   ```bash
   cd agente-estudos
   npm install
-  npm start                 # tsx --env-file=.env agente.ts
+  npm start                 # chat no terminal
+  npm run web               # debug UI no navegador
   ```
 
 ## Constraints
@@ -106,5 +133,6 @@ Construir o **`agente-estudos`**: um agente movido a skills que monta planos de 
 - [ ] **Plano completo:** com todas as informações, o agente lê `workflow.md`, `tecnicas.md`, `plano_template.md` e `salvar_agenda.md`, entrega módulos, cronograma e checkpoints e chama `Write`, criando `agente-estudos/planos/plano-de-estudos.csv` com um CSV válido para importação no Google Agenda.
 - [ ] **Replanejamento:** quando o usuário informa sessões perdidas, o agente devolve a tabela atualizada e sobrescreve o `plano-de-estudos.csv`, sem empilhar o conteúdo atrasado em um único dia.
 - [ ] **Restrição de caminho:** um pedido para gravar fora de `planos/` é negado pelo hook.
+- [ ] **Debug UI:** `npm run web` abre a página em `127.0.0.1`, mostra o chat e, ao lado, cada chamada de ferramenta com argumentos e resultado, incluindo a negação do hook.
 - [ ] **Conversa em dois turnos:** o agente mantém o contexto entre duas perguntas seguidas (`resume`).
 - [ ] Nenhum `.env`, API Key ou arquivo de `planos/` aparece em `git status` nem em arquivos versionados.
