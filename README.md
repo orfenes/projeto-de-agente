@@ -22,7 +22,7 @@ O comportamento vem da skill [`plano-de-estudos`](skills/plano-de-estudos/SKILL.
 Na raiz do repositório, abra a sua ferramenta de código e peça:
 
 ```text
-Crie o agente-estudos seguindo o AGENTS.md. Copie a skill skills/plano-de-estudos para agente-estudos/.claude/skills/ e crie o agente.ts, o package.json e o tsconfig.json. Sem configuração de deploy.
+Crie o agente-estudos seguindo o AGENTS.md. Copie a skill skills/plano-de-estudos para agente-estudos/.claude/skills/ e crie o config.ts, o agente.ts (chat no terminal), o package.json e o tsconfig.json. Crie também a debug UI local para eu testar o agente no navegador (servidor.ts, public/index.html e o script npm run web), seguindo a seção "Debug UI local" do AGENTS.md. Sem configuração de deploy.
 ```
 
 ## Configurar a API Key
