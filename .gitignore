@@ -1,0 +1,17 @@
+# Ambiente e segredos (API Key da Anthropic!)
+.env
+.env.*
+*.key.json
+
+# Node
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Planos gerados pelo agente (dados pessoais)
+planos/
+
+# Sistema e editores
+.DS_Store
+.vscode/
+.idea/
