@@ -82,9 +82,9 @@ O arquivo gerado fica em `agente-estudos/planos/plano-de-estudos.csv`. Para usar
 
 Ao alterar a skill, atualize as duas cópias.
 
-## Licença e origem
+## Origem
 
-A skill `plano-de-estudos` e a estrutura inicial deste projeto vieram de um laboratório da Imersão Dev da Alura. Antes de publicar o repositório, confira com o autor original se há alguma condição de uso e, se quiser, adicione um arquivo `LICENSE` seu.
+A skill `plano-de-estudos` e a estrutura inicial deste projeto partiram de um laboratório da Imersão Dev da Alura, usado aqui para estudo.
 
 ## Referências
 
